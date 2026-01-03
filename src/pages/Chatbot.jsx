@@ -37,7 +37,7 @@ export default function Chatbot() {
   const [showSelector, setShowSelector] = useState(true);
   const messagesRef = useRef(null);
 
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, refreshAccessToken } = useAuth();
 
   const resolvedApiBaseUrl = useMemo(() => {
     return (import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(
@@ -45,26 +45,6 @@ export default function Chatbot() {
       ""
     );
   }, []);
-
-  const refreshAccessToken = async () => {
-    try {
-      const resp = await fetch(`${resolvedApiBaseUrl}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!resp.ok) return null;
-
-      const data = await resp.json();
-      if (data?.accessToken) {
-        setAccessToken(data.accessToken);
-        return data.accessToken;
-      }
-    } catch (err) {
-      console.error("Refresh token failed", err);
-    }
-    return null;
-  };
 
   const sendQuery = (text, token) => {
     return fetch(`${resolvedApiBaseUrl}/ragbot`, {

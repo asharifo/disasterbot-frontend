@@ -6,7 +6,7 @@ function NavBar() {
   const getLinkClass = ({ isActive }) =>
     isActive ? "navbar_link active" : "navbar_link";
 
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
 
   return (
     <nav className="navbar">
@@ -41,9 +41,9 @@ function NavBar() {
         </ul>
 
         <div className="navbar_auth">
-          {user ? (
+          {isAuthReady && user ? (
             <span className="navbar_user">Hi, {user.username}</span>
-          ) : (
+          ) : isAuthReady ? (
             <>
               <NavLink to="/login" className="navbar_button ghost">
                 Log in
@@ -52,6 +52,8 @@ function NavBar() {
                 Register
               </NavLink>
             </>
+          ) : (
+            <span className="navbar_user">Checking session...</span>
           )}
         </div>
       </div>

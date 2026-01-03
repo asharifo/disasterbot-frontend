@@ -4,7 +4,7 @@ import "../css/AuthForms.css";
 import { useAuth } from "../context/AuthContext";
 
 const resolveApiBaseUrl = (explicitBaseUrl) => {
-  return (explicitBaseUrl || "http://localhost:3000").replace(/\/$/, "");
+  return (explicitBaseUrl || import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(/\/$/, "");
 };
 
 const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
@@ -101,7 +101,7 @@ const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
               autoComplete="username"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              placeholder="janedoe"
+              placeholder="enter your username"
               required
             />
           </div>

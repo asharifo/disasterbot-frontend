@@ -3,8 +3,21 @@ import { useAuth } from "../context/AuthContext";
 import "../css/AuthGate.css";
 
 function RequireAuth() {
-  const { user } = useAuth();
+  const { user, isAuthReady } = useAuth();
 
+  // While checking refresh token / session
+  if (!isAuthReady) {
+    return (
+      <section className="auth-gate">
+        <div className="auth-gate_card">
+          <h1>Checking your session</h1>
+          <p>Please wait while we restore your session.</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Auth check completed — user not logged in
   if (!user) {
     return (
       <section className="auth-gate">
@@ -26,6 +39,7 @@ function RequireAuth() {
     );
   }
 
+  // User authenticated
   return <Outlet />;
 }
 
