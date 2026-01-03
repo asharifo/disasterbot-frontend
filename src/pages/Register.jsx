@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/AuthForms.css";
+import { useAuth } from "../context/AuthContext";
 
 const resolveApiBaseUrl = (explicitBaseUrl) => {
   if (explicitBaseUrl) {
@@ -7,29 +9,27 @@ const resolveApiBaseUrl = (explicitBaseUrl) => {
   }
 
   const viteUrl =
-    typeof import.meta !== "undefined" ? import.meta?.env?.VITE_API_BASE_URL : null;
-  const craUrl = typeof process !== "undefined" ? process.env.REACT_APP_API_BASE_URL : null;
+    typeof import.meta !== "undefined"
+      ? import.meta?.env?.VITE_API_BASE_URL
+      : null;
+  const craUrl =
+    typeof process !== "undefined"
+      ? process.env.REACT_APP_API_BASE_URL
+      : null;
 
   return (viteUrl || craUrl || "").replace(/\/$/, "");
 };
 
-const persistToken = (token, storageKey) => {
-  if (!token) return;
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey, token);
-};
-
-const RegisterForm = ({
-  apiBaseUrl,
-  onAuthSuccess,
-  storageKey = "disasterbot_access_token",
-}) => {
+const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { setAccessToken } = useAuth();
+  const navigate = useNavigate();
 
   const resolvedApiBaseUrl = useMemo(
     () => resolveApiBaseUrl(apiBaseUrl),
@@ -79,10 +79,11 @@ const RegisterForm = ({
       if (onAuthSuccess) {
         onAuthSuccess(accessToken, payload);
       } else {
-        persistToken(accessToken, storageKey);
+        setAccessToken(accessToken);
       }
 
       setSuccessMessage("Account created! You can start chatting right away.");
+      navigate("/chatbot");
     } catch (error) {
       setErrorMessage(error?.message || "Unable to register. Please try again.");
     } finally {
@@ -126,7 +127,7 @@ const RegisterForm = ({
           </div>
 
           <div className="auth-field">
-            <label htmlFor="register-confirm-password">Confirm password</label>
+            <label htmlFor="register-confirm-password">Confirm Password</label>
             <input
               id="register-confirm-password"
               type="password"
@@ -151,14 +152,18 @@ const RegisterForm = ({
           ) : null}
 
           <div className="auth-actions">
-            <button className="auth-button" type="submit" disabled={isSubmitting}>
+            <button
+              className="auth-button"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Creating account..." : "Register"}
             </button>
           </div>
         </form>
 
         <footer className="auth-footer">
-          Already have an account? <a href="/login">Log in</a>
+          Already have an account? <Link to="/login">Log in</Link>
         </footer>
       </div>
     </div>

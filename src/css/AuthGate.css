@@ -1,0 +1,63 @@
+@import "./index.css";
+
+.auth-gate {
+  min-height: calc(100vh - 10vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem 3rem;
+  color: #f8fafc;
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 55%);
+}
+
+.auth-gate_card {
+  max-width: 520px;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 16px;
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.45);
+}
+
+.auth-gate_card h1 {
+  margin-bottom: 0.75rem;
+  font-size: 2rem;
+}
+
+.auth-gate_card p {
+  margin-bottom: 2rem;
+  color: #94a3b8;
+}
+
+.auth-gate_actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.auth-gate_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: #38bdf8;
+  color: #0f172a;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 10px 20px rgba(56, 189, 248, 0.25);
+}
+
+.auth-gate_button.outline {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  box-shadow: none;
+}
+
+.auth-gate_button:hover {
+  transform: translateY(-1px);
+}

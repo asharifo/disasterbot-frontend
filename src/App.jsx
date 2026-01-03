@@ -7,6 +7,7 @@ import NavBar from "./components/NavBar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ChatbotLayout from "./components/ChatbotLayout";
+import RequireAuth from "./components/RequireAuth";
 
 function App() {
   return (
@@ -17,14 +18,10 @@ function App() {
           {/* Public pages */}
           <Route path="/" element={<DisasterDimensions />} />
           <Route path="/more-info" element={<MoreInfo />} />
-
-          {/* Chatbot route tree */}
-          <Route path="/chatbot">
-            {/* Public auth pages */}
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-
-            {/* Protected chatbot workspace */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          {/* Protected chatbot workspace */}
+          <Route path="/chatbot" element={<RequireAuth />}>
             <Route element={<ChatbotLayout />}>
               <Route index element={<Chatbot />} />
             </Route>

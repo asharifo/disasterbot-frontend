@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/AuthForms.css";
+import { useAuth } from "../context/AuthContext";
 
 const resolveApiBaseUrl = (explicitBaseUrl) => {
   if (explicitBaseUrl) {
@@ -7,28 +9,26 @@ const resolveApiBaseUrl = (explicitBaseUrl) => {
   }
 
   const viteUrl =
-    typeof import.meta !== "undefined" ? import.meta?.env?.VITE_API_BASE_URL : null;
-  const craUrl = typeof process !== "undefined" ? process.env.REACT_APP_API_BASE_URL : null;
+    typeof import.meta !== "undefined"
+      ? import.meta?.env?.VITE_API_BASE_URL
+      : null;
+  const craUrl =
+    typeof process !== "undefined"
+      ? process.env.REACT_APP_API_BASE_URL
+      : null;
 
   return (viteUrl || craUrl || "").replace(/\/$/, "");
 };
 
-const persistToken = (token, storageKey) => {
-  if (!token) return;
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey, token);
-};
-
-const Login = ({
-  apiBaseUrl,
-  onAuthSuccess,
-  storageKey = "disasterbot_access_token",
-}) => {
+const Login = ({ apiBaseUrl, onAuthSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { setAccessToken } = useAuth();
+  const navigate = useNavigate();
 
   const resolvedApiBaseUrl = useMemo(
     () => resolveApiBaseUrl(apiBaseUrl),
@@ -73,10 +73,11 @@ const Login = ({
       if (onAuthSuccess) {
         onAuthSuccess(accessToken, payload);
       } else {
-        persistToken(accessToken, storageKey);
+        setAccessToken(accessToken);
       }
 
       setSuccessMessage("Login successful! You can continue to the app.");
+      navigate("/chatbot");
     } catch (error) {
       setErrorMessage(error?.message || "Unable to log in. Please try again.");
     } finally {
@@ -132,14 +133,18 @@ const Login = ({
           ) : null}
 
           <div className="auth-actions">
-            <button className="auth-button" type="submit" disabled={isSubmitting}>
+            <button
+              className="auth-button"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Logging in..." : "Log in"}
             </button>
           </div>
         </form>
 
         <footer className="auth-footer">
-          Need an account? <a href="/register">Create one</a>
+          Need an account? <Link to="/register">Create one</Link>
         </footer>
       </div>
     </div>
