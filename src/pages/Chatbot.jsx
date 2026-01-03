@@ -1,9 +1,10 @@
 import "../css/Chatbot.css";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PromptCarousel from "../components/PromptCarousel";
 import InputForm from "../components/InputForm";
 import ChatMessage from "../components/ChatMessage";
 import TypingIndicator from "../components/TypingIndicator";
+import { useAuth } from "../context/AuthContext";
 
 const prompts = [
   "What are the recommended evacuation routes for wildfires in my region?",
@@ -28,7 +29,7 @@ const countries = [
   "Uzbekistan",
 ];
 
-function Chatbot() {
+export default function Chatbot() {
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -36,54 +37,101 @@ function Chatbot() {
   const [showSelector, setShowSelector] = useState(true);
   const messagesRef = useRef(null);
 
-  const handleSendMessage = async (messageText) => {
-  if (!hasStartedChat) setHasStartedChat(true);
+  const { accessToken, setAccessToken } = useAuth();
 
-  const userMessage = {
-    id: Date.now().toString(),
-    text: messageText,
-    isBot: false,
-    timestamp: new Date(),
-  };
-  setMessages((prev) => [...prev, userMessage]);
-  setIsTyping(true);
+  const resolvedApiBaseUrl = useMemo(() => {
+    return (import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(
+      /\/$/,
+      ""
+    );
+  }, []);
 
-  try {
-    const resp = await fetch("/api/query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        question: messageText,
-        country: currCountry
-      })
-    });
+  const refreshAccessToken = async () => {
+    try {
+      const resp = await fetch(`${resolvedApiBaseUrl}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
 
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status}`);
+      if (!resp.ok) return null;
+
+      const data = await resp.json();
+      if (data?.accessToken) {
+        setAccessToken(data.accessToken);
+        return data.accessToken;
+      }
+    } catch (err) {
+      console.error("Refresh token failed", err);
     }
+    return null;
+  };
 
-    const data = await resp.json();
-    const botMessage = {
-      id: (Date.now() + 1).toString(),
-      text: data.answer ?? "No answer returned.",
-      isBot: true,
+  const sendQuery = (text, token) => {
+    return fetch(`${resolvedApiBaseUrl}/ragbot`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        question: text,
+        country: currCountry,
+      }),
+    });
+  };
+
+  const handleSendMessage = async (messageText) => {
+    if (!hasStartedChat) setHasStartedChat(true);
+
+    const userMessage = {
+      id: Date.now().toString(),
+      text: messageText,
+      isBot: false,
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, botMessage]);
-  } catch (error) {
-    const errorMessage = {
-      id: (Date.now() + 2).toString(),
-      text: "Sorry, something went wrong. Please try again.",
-      isBot: true,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, errorMessage]);
-  } finally {
-    setIsTyping(false);
-  }
-};
 
-  // Auto-scroll to new message
+    setMessages((prev) => [...prev, userMessage]);
+    setIsTyping(true);
+
+    try {
+      let resp = await sendQuery(messageText, accessToken);
+
+      if (resp.status === 401) {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          resp = await sendQuery(messageText, newToken);
+        }
+      }
+
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+      const data = await resp.json();
+
+      const botMessage = {
+        id: (Date.now() + 1).toString(),
+        text: data?.query?.answer || data?.answer || "No answer returned.",
+        isBot: true,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          text: "Sorry, something went wrong. Please try again.",
+          isBot: true,
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   useEffect(() => {
     const el = messagesRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -93,7 +141,6 @@ function Chatbot() {
     setCurrCountry(country);
     setShowSelector(false);
   };
-
   return (
     <div className="chatbot-ui">
       <div className={`country-overlay ${!showSelector ? "hidden" : ""}`}>
@@ -164,4 +211,3 @@ function Chatbot() {
   );
 }
 
-export default Chatbot;
