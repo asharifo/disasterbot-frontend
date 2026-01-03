@@ -4,20 +4,7 @@ import "../css/AuthForms.css";
 import { useAuth } from "../context/AuthContext";
 
 const resolveApiBaseUrl = (explicitBaseUrl) => {
-  if (explicitBaseUrl) {
-    return explicitBaseUrl.replace(/\/$/, "");
-  }
-
-  const viteUrl =
-    typeof import.meta !== "undefined"
-      ? import.meta?.env?.VITE_API_BASE_URL
-      : null;
-  const craUrl =
-    typeof process !== "undefined"
-      ? process.env.REACT_APP_API_BASE_URL
-      : null;
-
-  return (viteUrl || craUrl || "").replace(/\/$/, "");
+  return (explicitBaseUrl || "http://localhost:3000").replace(/\/$/, "");
 };
 
 const Login = ({ apiBaseUrl, onAuthSuccess }) => {
@@ -46,7 +33,9 @@ const Login = ({ apiBaseUrl, onAuthSuccess }) => {
     }
 
     if (!resolvedApiBaseUrl) {
-      setErrorMessage("API base URL is missing. Please set it before logging in.");
+      setErrorMessage(
+        "API base URL is missing. Please set it before logging in."
+      );
       return;
     }
 
@@ -65,7 +54,9 @@ const Login = ({ apiBaseUrl, onAuthSuccess }) => {
       const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(payload?.message || "Unable to log in. Please try again.");
+        throw new Error(
+          payload?.message || "Unable to log in. Please try again."
+        );
       }
 
       const accessToken = payload?.accessToken;

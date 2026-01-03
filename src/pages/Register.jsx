@@ -4,20 +4,7 @@ import "../css/AuthForms.css";
 import { useAuth } from "../context/AuthContext";
 
 const resolveApiBaseUrl = (explicitBaseUrl) => {
-  if (explicitBaseUrl) {
-    return explicitBaseUrl.replace(/\/$/, "");
-  }
-
-  const viteUrl =
-    typeof import.meta !== "undefined"
-      ? import.meta?.env?.VITE_API_BASE_URL
-      : null;
-  const craUrl =
-    typeof process !== "undefined"
-      ? process.env.REACT_APP_API_BASE_URL
-      : null;
-
-  return (viteUrl || craUrl || "").replace(/\/$/, "");
+  return (explicitBaseUrl || "http://localhost:3000").replace(/\/$/, "");
 };
 
 const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
@@ -52,7 +39,9 @@ const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
     }
 
     if (!resolvedApiBaseUrl) {
-      setErrorMessage("API base URL is missing. Please set it before registering.");
+      setErrorMessage(
+        "API base URL is missing. Please set it before registering."
+      );
       return;
     }
 
@@ -71,7 +60,9 @@ const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
       const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(payload?.message || "Unable to register. Please try again.");
+        throw new Error(
+          payload?.message || "Unable to register. Please try again."
+        );
       }
 
       const accessToken = payload?.accessToken;
@@ -85,7 +76,9 @@ const RegisterForm = ({ apiBaseUrl, onAuthSuccess }) => {
       setSuccessMessage("Account created! You can start chatting right away.");
       navigate("/chatbot");
     } catch (error) {
-      setErrorMessage(error?.message || "Unable to register. Please try again.");
+      setErrorMessage(
+        error?.message || "Unable to register. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }

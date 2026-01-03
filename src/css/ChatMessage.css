@@ -1,0 +1,81 @@
+:root {
+    --primary: #1b263b;                 
+    --primary-foreground: #ffffff;
+  
+    --user-message-bg: #415a77;    
+    --bot-message-bg: #1b263b;        
+  
+    --foreground: #ffffff;            
+    --muted-foreground: #9ca3af;        
+  }
+  
+  .chat-message {
+    display: flex;
+    gap: 0.75rem;          
+    margin-bottom: 1.5rem;
+    width: 100%;
+  }
+  
+  .chat-message.user {
+    flex-direction: row-reverse;
+  }
+  
+  .avatar {
+    flex-shrink: 0;
+    width: 2rem;   
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .avatar.bot  { background: var(--primary); }
+  .avatar.user { background: var(--user-message-bg); }
+  
+  .icon {
+    width: 1rem;     
+    height: 1rem;
+    color: var(--primary-foreground);
+  }
+  
+  .message-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+  }
+  
+  .message-container.user {
+    align-items: flex-end;
+  }
+  
+  .bubble {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .bubble.bot  {
+    background: var(--bot-message-bg);
+    color: var(--foreground);
+  }
+  
+  .bubble.user {
+    background: var(--user-message-bg);
+    color: var(--primary-foreground);
+  }
+  
+  .timestamp {
+    margin-top: 0.25rem;  
+    font-size: 0.75rem;   
+    color: var(--muted-foreground);
+  }
+  
+  .text {
+    margin: 0;
+    font-size: 0.875rem; 
+    line-height: 1.4;
+  }
+  

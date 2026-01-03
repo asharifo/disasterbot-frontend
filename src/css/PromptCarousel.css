@@ -1,0 +1,43 @@
+.prompt-carousel {
+    --fade: 3rem; 
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 100%;
+    width: 100%;
+      -webkit-mask: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+    );
+            mask: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+    );
+  }
+  
+  .marquee {  
+    gap: 2rem; 
+    display: flex;
+  }
+  
+  .prompt {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;            
+    border-radius: 8px;             
+    background: white;
+    color: black;
+    font-weight: 500;                  
+    font-size: 0.875rem;     
+    cursor: pointer;                    
+    border: 1px solid rgba(255,255,255,0.2); 
+    transition: all 0.3s ease;
+  }
+  
+  
