@@ -4,6 +4,9 @@ import Chatbot from "./pages/Chatbot.jsx";
 import { Routes, Route } from "react-router-dom";
 import MoreInfo from "./pages/MoreInfo";
 import NavBar from "./components/NavBar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ChatbotLayout from "./components/ChatbotLayout";
 
 function App() {
   return (
