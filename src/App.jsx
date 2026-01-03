@@ -1,6 +1,6 @@
-import "./App.css";
+import "./css/App.css";
 import DisasterDimensions from "./pages/DisasterDimensions";
-import Chatbot from "./pages/Chatbot";
+import Chatbot from "./pages/Chatbot.jsx";
 import { Routes, Route } from "react-router-dom";
 import MoreInfo from "./pages/MoreInfo";
 import NavBar from "./components/NavBar";
@@ -11,18 +11,21 @@ function App() {
       <NavBar />
       <main className="content">
         <Routes>
+          {/* Public pages */}
           <Route path="/" element={<DisasterDimensions />} />
+          <Route path="/more-info" element={<MoreInfo />} />
 
+          {/* Chatbot route tree */}
           <Route path="/chatbot">
-            {/* public login route */}
+            {/* Public auth pages */}
             <Route path="login" element={<Login />} />
-            {/* protected area */}
+            <Route path="register" element={<Register />} />
+
+            {/* Protected chatbot workspace */}
             <Route element={<ChatbotLayout />}>
               <Route index element={<Chatbot />} />
             </Route>
           </Route>
-
-          <Route path="/more-info" element={<MoreInfo />} />
         </Routes>
       </main>
     </>

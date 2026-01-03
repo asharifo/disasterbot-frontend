@@ -1,68 +1,94 @@
+/* Style variables */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+    --undpds-color-black: #000;
+    --undpds-color-white: #fff;
+    --undpds-color-blue-100: #b5d5f5;
+    --undpds-color-blue-200: #94c4f5;
+    --undpds-color-blue-300: #6babeb;
+    --undpds-color-blue-400: #4f95dd;
+    --undpds-color-blue-500: #3288ce;
+    --undpds-color-blue-600: #0468b1;
+    --undpds-color-blue-700: #1f5a95;
+    --undpds-color-blue-800: #0468b1;
+    --undpds-color-gray-100: #fafafa;
+    --undpds-color-gray-200: #f7f7f7;
+    --undpds-color-gray-300: #edeff0;
+    --undpds-color-gray-400: #d4d6d8;
+    --undpds-color-gray-500: #a9b1b7;
+    --undpds-color-gray-600: #55606e;
+    --undpds-color-gray-700: #232e3d;
+    --undpds-color-light-yellow: #ffe17e;
+    --undpds-color-yellow: #ffeb00;
+    --undpds-color-dark-yellow: #fbc412;
+    --undpds-color-light-red: #ffbcb7;
+    --undpds-color-red: #ee402d;
+    --undpds-color-dark-red: #d12800;
+    --undpds-color-light-green: #b8ecb6;
+    --undpds-color-green: #6de354;
+    --undpds-color-dark-green: #59ba47;
+    --undpds-color-light-azure: #a2daf3;
+    --undpds-color-azure: #60d4f2;
+    --undpds-color-dark-azure: #00c1ff;
+    --undpds-color-light-pink: #ffb4ae;
+    --undpds-color-silvery-moonlight: #ced0d3;
+    --undpds-color-shuttle-gray: #55606f;
+    --undpds-color-ebony-clay: #232e3e;
+    --undpds-header-height-xlarge: 115px;
+    --undpds-header-height-medium: 75px;
+    --undpds-yellow-gradient: #ffeb00 30%, rgba(255, 235, 0, 0) 110%;
+    --undpds-red-gradient: #ee402d 30%, rgba(240, 49, 49, 0) 110%;
+    --undpds-green-gradient: #6de354 30%, transparent 110%;
+    --undpds-blue-gradient: #60d4f2 30%, rgba(101, 204, 244, 0) 110%;
+    --undpds-sdg-red: #e5243b;
+    --undpds-sdg-mustard: #dda63a;
+    --undpds-sdg-kelly-green: #4c9f38;
+    --undpds-sdg-dark-red: #c5192d;
+    --undpds-sdg-red-orange: #ff3a21;
+    --undpds-sdg-bright-blue: #26bde2;
+    --undpds-sdg-yellow: #fcc30b;
+    --undpds-sdg-burgundy-red: #a21942;
+    --undpds-sdg-orange: #fd6925;
+    --undpds-sdg-magenta: #dd1367;
+    --undpds-sdg-golden-yellow: #fd9d24;
+    --undpds-sdg-dark-mustard: #bf8b2e;
+    --undpds-sdg-dark-green: #3f7e44;
+    --undpds-sdg-blue: #0a97d9;
+    --undpds-sdg-lime-green: #56c02b;
+    --undpds-sdg-royal-blue: #00689d;
+    --undpds-sdg-navy-blue: #19486a;
+    --bg-page: #f7f8fa;
+    --bg-section: #ffffff;
+    --text-color: #11181c;
+    --border-color: #e1e3e5;
+    --pill-radius: 0.8rem;
+    --pill-shadow: rgba(0, 0, 0, 0.05);
   }
-  a:hover {
-    color: #747bff;
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
-  button {
-    background-color: #f9f9f9;
+  
+  body {
+    font-family: system-ui, sans-serif;
+    background: #f2f1ee;
+    color: white;
+    overflow-x: hidden;
+    height: 100vh;
+    width: 100vw;
   }
-}
+  
+  #root {
+    height: 100%;
+    width: 100%;
+  }
+  
+  html, body {
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE 10+ */
+  }
+  html::-webkit-scrollbar {
+    width: 0;
+    background: transparent;     /* Chrome/Safari */
+  }
