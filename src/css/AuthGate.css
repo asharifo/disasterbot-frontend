@@ -1,7 +1,8 @@
 @import "./index.css";
 
 .auth-gate {
-  min-height: calc(100vh - 10vh);
+  height: 100vh;
+  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;

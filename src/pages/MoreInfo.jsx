@@ -1,10 +1,9 @@
+import "../css/MoreInfo.css";
+
 function MoreInfo() {
-    return (
-      <section className="page">
-        <h1>Login</h1>
-        <p>Placeholder login page.</p>
-      </section>
-    );
-  }
-  
-  export default MoreInfo;
+    return <div className="more-info-container"> 
+    <h1>Coming Soon!</h1>
+    </div>  
+}
+
+export default MoreInfo
