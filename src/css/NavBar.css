@@ -80,6 +80,7 @@ nav .logo {
 
 .navbar_button:hover {
   transform: translateY(-1px);
+  cursor: pointer;
 }
 
 /* .navbar_user {
