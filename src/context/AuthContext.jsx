@@ -85,6 +85,19 @@ export const AuthProvider = ({ children }) => {
     return null;
   }, [apiBaseUrl, setAccessToken]);
 
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${apiBaseUrl}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      setAccessToken(null);
+    }
+  }, [apiBaseUrl, setAccessToken]);
+
   const user = useMemo(() => {
     const payload = decodeToken(accessToken);
     if (!payload?.username) return null;
@@ -119,11 +132,12 @@ export const AuthProvider = ({ children }) => {
     () => ({
       accessToken,
       isAuthReady,
+      logout,
       refreshAccessToken,
       user,
       setAccessToken,
     }),
-    [accessToken, user][(accessToken, isAuthReady, refreshAccessToken, user)]
+    [accessToken, isAuthReady, logout, refreshAccessToken, user, setAccessToken]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
