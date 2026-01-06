@@ -120,7 +120,6 @@ export default function Chatbot() {
         data = null;
       }
 
-      // Handle API errors
       if (!resp.ok) {
         if (resp.status === 429 && data?.error === "RATE_LIMIT_EXCEEDED") {
           throw new Error(data.message);
