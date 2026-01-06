@@ -79,3 +79,35 @@
     line-height: 1.4;
   }
   
+  .bubble p {
+    margin: 0.6rem 0;
+  }
+  
+  .text {
+    margin: 0;
+  }
+  
+  .bubble strong {
+    font-weight: 600;
+    color: #ffffff;
+  }
+  
+  .bubble em {
+    color: #d1d5db;
+  }
+  
+  .bubble ul,
+  .bubble ol {
+    margin: 0.6rem 0;
+    padding-left: 1.2rem;
+  }
+  
+  .bubble ol {
+    list-style-position: inside;
+    padding-left: 0;
+  }
+  
+  .bubble li {
+    margin-bottom: 0.4rem;
+    padding-left: 0.2rem;
+  }
