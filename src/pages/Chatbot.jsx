@@ -40,10 +40,9 @@ export default function Chatbot() {
   const { accessToken, refreshAccessToken } = useAuth();
 
   const resolvedApiBaseUrl = useMemo(() => {
-    return (import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(
-      /\/$/,
-      ""
-    );
+    return (
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
+    ).replace(/\/$/, "");
   }, []);
 
   const sendQuery = (text, token) => {
@@ -59,6 +58,36 @@ export default function Chatbot() {
         country: currCountry,
       }),
     });
+  };
+
+  const getAllQueries = async () => {
+    try {
+      const resp = await fetch(`${resolvedApiBaseUrl}/ragbot`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      });
+
+      if (resp.status === 401) {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          return await fetch(`${resolvedApiBaseUrl}/queries`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${newToken}`,
+            },
+          });
+        }
+      }
+      return resp;
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleSendMessage = async (messageText) => {
@@ -84,9 +113,25 @@ export default function Chatbot() {
         }
       }
 
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      let data;
+      try {
+        data = await resp.json();
+      } catch {
+        data = null;
+      }
 
-      const data = await resp.json();
+      // Handle API errors
+      if (!resp.ok) {
+        if (resp.status === 429 && data?.error === "RATE_LIMIT_EXCEEDED") {
+          throw new Error(data.message);
+        }
+
+        if (resp.status === 401) {
+          throw new Error("Your session has expired. Please log in again.");
+        }
+
+        throw new Error(data?.message || `Request failed (${resp.status})`);
+      }
 
       const botMessage = {
         id: (Date.now() + 1).toString(),
@@ -190,4 +235,3 @@ export default function Chatbot() {
     </div>
   );
 }
-
