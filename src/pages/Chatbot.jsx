@@ -45,6 +45,7 @@ export default function Chatbot() {
     ).replace(/\/$/, "");
   }, []);
 
+  // Non-streaming
   const sendQuery = (text, token) => {
     return fetch(`${resolvedApiBaseUrl}/ragbot`, {
       method: "POST",
@@ -59,6 +60,24 @@ export default function Chatbot() {
       }),
     });
   };
+
+  // Streaming
+  const sendStreamQuery = (text, token) => {
+    return fetch(`${resolvedApiBaseUrl}/ragbot/stream`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        question: text,
+        country: currCountry,
+      }),
+    });
+  };
+
+  const parseStreamChunk = (chunk) => (typeof chunk === "string" ? chunk : "");
 
   const getAllQueries = async () => {
     try {
@@ -104,42 +123,50 @@ export default function Chatbot() {
     setIsTyping(true);
 
     try {
-      let resp = await sendQuery(messageText, accessToken);
+      let resp = await sendStreamQuery(messageText, accessToken);
 
       if (resp.status === 401) {
         const newToken = await refreshAccessToken();
         if (newToken) {
-          resp = await sendQuery(messageText, newToken);
+          resp = await sendStreamQuery(messageText, newToken);
         }
-      }
-
-      let data;
-      try {
-        data = await resp.json();
-      } catch {
-        data = null;
       }
 
       if (!resp.ok) {
-        if (resp.status === 429 && data?.error === "RATE_LIMIT_EXCEEDED") {
-          throw new Error(data.message);
-        }
-
-        if (resp.status === 401) {
-          throw new Error("Your session has expired. Please log in again.");
-        }
-
-        throw new Error(data?.message || `Request failed (${resp.status})`);
+        let data = null;
+        try {
+          data = await resp.json();
+        } catch {}
+        throw new Error(data?.message || "Streaming failed");
       }
 
-      const botMessage = {
-        id: (Date.now() + 1).toString(),
-        text: data?.query?.answer || data?.answer || "No answer returned.",
-        isBot: true,
-        timestamp: new Date(),
-      };
+      const botMessageId = (Date.now() + 1).toString();
 
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [
+        ...prev,
+        { id: botMessageId, text: "", isBot: true, timestamp: new Date() },
+      ]);
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const token = parseStreamChunk(chunk);
+        if (!token) continue;
+
+        fullText += token;
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === botMessageId ? { ...m, text: fullText } : m
+          )
+        );
+      }
     } catch (err) {
       console.error(err);
       setMessages((prev) => [
@@ -165,6 +192,7 @@ export default function Chatbot() {
     setCurrCountry(country);
     setShowSelector(false);
   };
+
   return (
     <div className="chatbot-ui">
       <div className={`country-overlay ${!showSelector ? "hidden" : ""}`}>
