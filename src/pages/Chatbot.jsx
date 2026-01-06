@@ -77,7 +77,24 @@ export default function Chatbot() {
     });
   };
 
-  const parseStreamChunk = (chunk) => (typeof chunk === "string" ? chunk : "");
+  const parseStreamChunk = (chunk) => {
+    if (!chunk) return "";
+  
+    let token = "";
+    const lines = chunk.split("\n");
+  
+    for (const line of lines) {
+      if (line.startsWith("data:")) {
+        try {
+          const json = JSON.parse(line.replace("data:", "").trim());
+          if (json?.token) token += json.token;
+        } catch {}
+      }
+    }
+  
+    return token;
+  };
+  
 
   const getAllQueries = async () => {
     try {
@@ -93,7 +110,7 @@ export default function Chatbot() {
       if (resp.status === 401) {
         const newToken = await refreshAccessToken();
         if (newToken) {
-          return await fetch(`${resolvedApiBaseUrl}/queries`, {
+          return await fetch(`${resolvedApiBaseUrl}/ragbot`, {
             method: "GET",
             credentials: "include",
             headers: {
