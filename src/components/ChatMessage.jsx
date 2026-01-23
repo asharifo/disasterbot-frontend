@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 
+// !!! Display sources above timestamp 
 export default function ChatMessage({ message, isBot, timestamp }) {
   return (
     <div className={`chat-message ${isBot ? "bot" : "user"}`}>

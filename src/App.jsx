@@ -20,6 +20,7 @@ function App() {
           <Route path="/more-info" element={<MoreInfo />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
           {/* Protected chatbot workspace */}
           <Route path="/chatbot" element={<RequireAuth />}>
             <Route element={<ChatbotLayout />}>

@@ -139,6 +139,8 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
+    // add context from messages into fetch request
+
     try {
       let resp = await sendStreamQuery(messageText, accessToken);
 
@@ -184,6 +186,8 @@ export default function Chatbot() {
           )
         );
       }
+
+    // Catch 429 error and tell user to wait 15 minutes 
     } catch (err) {
       console.error(err);
       setMessages((prev) => [
