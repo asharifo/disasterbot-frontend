@@ -12,7 +12,7 @@ const AuthContext = createContext(null);
 const STORAGE_KEY = "disasterbot_access_token";
 const DEFAULT_API_BASE_URL = "http://localhost:3000";
 
-/* ------------------ helpers ------------------ */
+// Helpers
 
 const decodeToken = (token) => {
   if (!token || typeof window === "undefined") return null;
@@ -37,7 +37,7 @@ const resolveApiBaseUrl = (explicit) => {
   return (explicit || DEFAULT_API_BASE_URL).replace(/\/$/, "");
 };
 
-/* ------------------ provider ------------------ */
+// Provider
 
 export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessTokenState] = useState(() => {
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-/* ------------------ hook ------------------ */
+// Hook
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { InertiaPlugin } from "gsap/InertiaPlugin";
-import FullscreenOverlay from "./FullscreenOverlay";
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
@@ -14,8 +13,6 @@ export default function ImageSlider({ images }) {
   const parallaxSetters = useRef([]);
   const imageLoadedRef = useRef(new Set());
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Animation state kept in refs to avoid stale closures
@@ -43,27 +40,24 @@ export default function ImageSlider({ images }) {
       return;
     }
 
-    images.forEach((src, index) => {
-      const img = new Image();
-      img.onload = () => {
-        imageLoadedRef.current.add(index);
+    images.forEach((src) => {
+      if (imageLoadedRef.current.has(src)) {
         loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
+        if (loadedCount === totalImages) setImagesLoaded(true);
+        return;
+      }
+
+      const img = new Image();
+      img.src = src;
+      img.onload = () => {
+        imageLoadedRef.current.add(src);
+        loadedCount++;
+        if (loadedCount === totalImages) setImagesLoaded(true);
       };
       img.onerror = () => {
         loadedCount++;
-        if (loadedCount === totalImages) {
-          setImagesLoaded(true);
-        }
+        if (loadedCount === totalImages) setImagesLoaded(true);
       };
-
-      // Hints
-      img.decoding = "async";
-      // Let browser decide; thumbnails themselves will be "lazy"
-      img.loading = "auto";
-      img.src = src;
     });
   }, [images]);
 
@@ -78,69 +72,38 @@ export default function ImageSlider({ images }) {
     const track = trackRef.current;
     if (!container || !track) return;
 
-    const slideEls = slideRefs.current.filter(Boolean);
+    const slides = slideRefs.current;
+    const slideCount = slides.length;
 
-    // Compute basic layout metrics once
-    const containerWidth = container.offsetWidth;
-    const trackWidth = track.scrollWidth;
-    const maxDrag = Math.max(trackWidth - containerWidth, 0);
-    const BUFFER = 100; // small buffer for "soft" edges
+    const SLIDE_GAP = 40;
+    const SCROLL_SENSITIVITY = 0.8;
+    const BUFFER = 200;
 
-    const PARALLAX_RATIO = 0.3;
-    const SCROLL_SENSITIVITY = 1.2;
-    const LERP_FACTOR = 0.12;
-
-    // Get all image elements inside slides
-    const imageEls = slideEls
-      .map((slide) => slide.querySelector("img"))
-      .filter(Boolean);
-
-    // Precompute slide positions to avoid getBoundingClientRect on every frame
-    const slideMeta = slideEls.map((slide) => ({
-      offsetLeft: slide.offsetLeft,
-      width: slide.offsetWidth,
-    }));
-
-    // Optimize images for transforms
-    imageEls.forEach((img) => {
-      gsap.set(img, {
-        force3D: true,
-        willChange: "transform",
-        backfaceVisibility: "hidden",
-        perspective: 1000,
-      });
-      img.style.imageRendering = "optimizeSpeed";
-      img.style.imageRendering = "-webkit-optimize-contrast";
-      // Direct DOM attribute: thumbnails can safely be lazy
-      img.loading = "lazy";
-      img.decoding = "async";
+    let totalWidth = 0;
+    slides.forEach((slide) => {
+      if (!slide) return;
+      const rect = slide.getBoundingClientRect();
+      totalWidth += rect.width + SLIDE_GAP;
     });
 
-    parallaxSetters.current = imageEls.map((img) =>
-      gsap.quickSetter(img, "x", "px")
-    );
+    const maxDrag = Math.max(0, totalWidth - container.clientWidth);
 
-    // ------- Parallax update with visibility culling (no layout thrash) ------
-    const updateParallax = (trackX) => {
-      const shift = -trackX * PARALLAX_RATIO;
+    // Parallax setters
+    parallaxSetters.current = slides.map((slide) => {
+      if (!slide) return null;
+      const img = slide.querySelector("img");
+      if (!img) return null;
+      return gsap.quickSetter(img, "x", "px");
+    });
 
-      slideEls.forEach((slide, i) => {
-        const meta = slideMeta[i];
-        if (!meta) return;
-
-        const leftOnScreen = meta.offsetLeft + trackX;
-        const rightOnScreen = leftOnScreen + meta.width;
-
-        const isVisible =
-          rightOnScreen > -200 && leftOnScreen < containerWidth + 200;
-
-        if (isVisible && parallaxSetters.current[i]) {
-          parallaxSetters.current[i](shift);
-        }
+    const updateParallax = (x) => {
+      slides.forEach((slide, i) => {
+        if (!slide || !parallaxSetters.current[i]) return;
+        const progress = (x / maxDrag) * 100;
+        parallaxSetters.current[i](-progress * 0.3);
       });
     };
 
-    // ------- Smooth animation loop using requestAnimationFrame --------------
     const startAnimationLoop = () => {
       if (isAnimatingRef.current) return;
       isAnimatingRef.current = true;
@@ -148,48 +111,34 @@ export default function ImageSlider({ images }) {
       const animate = () => {
         const current = currentPositionRef.current;
         const target = targetPositionRef.current;
-        const delta = target - current;
+        const next = current + (target - current) * 0.12;
 
-        if (Math.abs(delta) > 0.5) {
-          const next = current + delta * LERP_FACTOR;
-          currentPositionRef.current = next;
-          gsap.set(track, {
-            x: next,
-            force3D: true,
-          });
-          updateParallax(next);
+        currentPositionRef.current = next;
+        gsap.set(track, { x: next });
+        updateParallax(next);
+
+        if (Math.abs(target - next) > 0.5) {
           rafIdRef.current = requestAnimationFrame(animate);
         } else {
           currentPositionRef.current = target;
-          gsap.set(track, {
-            x: target,
-            force3D: true,
-          });
+          gsap.set(track, { x: target });
           updateParallax(target);
           isAnimatingRef.current = false;
-          rafIdRef.current = null;
         }
       };
 
       rafIdRef.current = requestAnimationFrame(animate);
     };
 
-    // ------- Draggable setup -----------------------------------------------
     const instance = Draggable.create(track, {
       type: "x",
-      bounds: { minX: -maxDrag - BUFFER, maxX: BUFFER },
       inertia: true,
-      dragResistance: 0.15,
-      throwResistance: 1200,
-      cursor: "grab",
+      bounds: {
+        minX: -maxDrag - BUFFER,
+        maxX: BUFFER,
+      },
       onPress() {
         this.cursor = "grabbing";
-        // Stop current smoothing loop if any
-        if (rafIdRef.current) {
-          cancelAnimationFrame(rafIdRef.current);
-          rafIdRef.current = null;
-          isAnimatingRef.current = false;
-        }
       },
       onRelease() {
         this.cursor = "grab";
@@ -214,21 +163,13 @@ export default function ImageSlider({ images }) {
     targetPositionRef.current = instance.x;
     updateParallax(instance.x);
 
-    // ------- Wheel handler with RAF scheduling -----------------------------
     const handleWheelInternal = () => {
-      if (isFullscreen) return;
-      const container = containerRef.current;
-      if (!container) return;
-
       const delta = lastWheelDeltaRef.current;
       if (!delta) return;
 
       const deltaX = delta * SCROLL_SENSITIVITY;
+      let nextTarget = targetPositionRef.current - deltaX;
 
-      let nextTarget =
-        targetPositionRef.current - deltaX;
-
-      // Clamp target within extended bounds
       const minX = -maxDrag - BUFFER;
       const maxX = BUFFER;
       if (nextTarget < minX) nextTarget = minX;
@@ -239,8 +180,6 @@ export default function ImageSlider({ images }) {
     };
 
     const handleWheel = (e) => {
-      if (isFullscreen) return;
-
       e.preventDefault();
 
       const dominantDelta =
@@ -257,85 +196,30 @@ export default function ImageSlider({ images }) {
       }
     };
 
-    // Fullscreen enable/disable: control Draggable & listeners
-    const applyFullscreenState = () => {
-      if (!container) return;
-      if (isFullscreen) {
-        instance.disable();
-        container.style.pointerEvents = "none";
-        track.style.pointerEvents = "none";
-        container.removeEventListener("wheel", handleWheel);
-        if (rafIdRef.current) {
-          cancelAnimationFrame(rafIdRef.current);
-          rafIdRef.current = null;
-          isAnimatingRef.current = false;
-        }
-      } else {
-        instance.enable();
-        container.style.pointerEvents = "auto";
-        track.style.pointerEvents = "auto";
-        container.addEventListener("wheel", handleWheel, { passive: false });
-      }
-    };
-
-    applyFullscreenState();
-
-    // Re-apply when fullscreen state changes
-    // (effect already runs on isFullscreen change)
-    // so no extra listener needed.
+    container.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
       instance.kill();
       container.removeEventListener("wheel", handleWheel);
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
-      }
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       isAnimatingRef.current = false;
       wheelFrameRequestedRef.current = false;
     };
-  }, [isFullscreen, imagesLoaded]);
-
-  const handleThumbnailClick = (index) => {
-    setCurrentIndex(index);
-    setIsFullscreen(true);
-  };
-
-  const handleFullscreenExit = () => {
-    setIsFullscreen(false);
-  };
-
-  const handleIndexChange = (newIndex) => {
-    setCurrentIndex(newIndex);
-  };
+  }, [imagesLoaded]);
 
   return (
-    <>
-      {/* Thumbnail carousel */}
-      <div ref={containerRef} className="slider-container">
-        <div ref={trackRef} className="image-track">
-          {images.map((src, i) => (
-            <div
-              key={i}
-              className="slide"
-              ref={(el) => setSlideRef(el, i)}
-              onClick={() => handleThumbnailClick(i)}
-            >
-              <img src={src} alt={`Slide ${i + 1}`} />
-            </div>
-          ))}
-        </div>
+    <div ref={containerRef} className="slider-container">
+      <div ref={trackRef} className="image-track">
+        {images.map((src, i) => (
+          <div
+            key={i}
+            className="slide"
+            ref={(el) => setSlideRef(el, i)}
+          >
+            <img src={src} alt={`Slide ${i + 1}`} />
+          </div>
+        ))}
       </div>
-
-      {/* Fullscreen overlay */}
-      {isFullscreen && (
-        <FullscreenOverlay
-          images={images}
-          currentIndex={currentIndex}
-          slideRefs={slideRefs}
-          onExit={handleFullscreenExit}
-          onIndexChange={handleIndexChange}
-        />
-      )}
-    </>
+    </div>
   );
 }
